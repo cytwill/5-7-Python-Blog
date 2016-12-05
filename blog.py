@@ -36,6 +36,27 @@ def render_post(response, post):
 def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
 
+class MainPage(BlogHandler):
+    def get(self):
+        # set content type to text so we don't have to deal with html
+        self.response.headers['Content-Type'] = 'text/plain'
+        # request object (which is on self) has a cookies object. Call the function get
+        # GET checks whether a value is in a dictionary; if it is we get it, if it's not we get returned the default (0)
+        visits = self.request.cookies.get('visits', '0')
+        # VISITS is currently string, turn it into an int
+        if visits.isdigit():
+            visits = int(visits) + 1
+        else: 
+            visits = 0
+        
+        # use a header to set a cookie
+        self.response.headers.add_header('Set-Cookie', 'visits=%s' % visits) 
+
+        if visits > 1000: 
+            self.write("You are the best ever!")
+        else: 
+            self.write("You've been here %s times!" % visits)
+
 # The properties that a blog has. String vs text property? 
 # Remember that string has limit, while text does not. Strings can be indexed, and text cannot
 # Text can also have newlines in it
@@ -105,7 +126,8 @@ class NewPost(BlogHandler):
             error = "subject and content, please!"
             self.render("newpost.html", subject=subject, content=content, error=error)
 
-app = webapp2.WSGIApplication([('/blog/?', BlogFront),
+app = webapp2.WSGIApplication([('/', MainPage),
+                               ('/blog/?', BlogFront),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/newpost', NewPost),
                                ],
