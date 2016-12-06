@@ -42,13 +42,13 @@ def hash_str(s)
 
 # takes a string a returns a string of the format: s, HASH
 def make_secure_val(s): 
-    return "%s, %s" % (s, hash_str(s))
+    return "%s|%s" % (s, hash_str(s))
 
 # take a string of the format s,HASH and returns s if hash_str(s) == HASH, otherwise None
 def check_secure_val(h): 
     # here we're splitting s,HASH and taking the first part of it (e.g. val = s)
     # then we check to see if the value we're passing == s, HASH (which is what make_secure_val(val) returns)
-    val = h.split(',')[0]
+    val = h.split('|')[0]
     if h == make_secure_val(val):
         return val
 
