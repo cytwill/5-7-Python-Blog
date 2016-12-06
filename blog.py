@@ -37,7 +37,7 @@ def render_post(response, post):
 def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
 
-def hash_str(s) 
+def hash_str(s): 
     return hashlib.md5(s).hexdigest()
 
 # takes a string a returns a string of the format: s, HASH
@@ -61,7 +61,7 @@ class MainPage(BlogHandler):
          # request object (which is on self) has a cookies object. Call the function get
         # GET checks whether a value is in a dictionary; if it is we get it; otherwise return none if that cookie doesn't exist at all
         visit_cookie_str = self.request.cookies.get('visits')
-        if visit_cookie_val:
+        if visit_cookie_str:
             cookie_val = check_secure_val(visit_cookie_str)
             # remember this function returns none if not valid. If it IS valid, convert to int and store in visits
             if cookie_val: 
