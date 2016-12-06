@@ -4,6 +4,7 @@ from string import letters
 
 import webapp2
 import jinja2
+import hashlib
 
 from google.appengine.ext import db
 
@@ -36,21 +37,42 @@ def render_post(response, post):
 def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
 
+def hash_str(s) 
+    return hashlib.md5(s).hexdigest()
+
+# takes a string a returns a string of the format: s, HASH
+def make_secure_val(s): 
+    return "%s, %s" % (s, hash_str(s))
+
+# take a string of the format s,HASH and returns s if hash_str(s) == HASH, otherwise None
+def check_secure_val(h): 
+    # here we're splitting s,HASH and taking the first part of it (e.g. val = s)
+    # then we check to see if the value we're passing == s, HASH (which is what make_secure_val(val) returns)
+    val = h.split(',')[0]
+    if h == make_secure_val(val):
+        return val
+
 class MainPage(BlogHandler):
     def get(self):
         # set content type to text so we don't have to deal with html
         self.response.headers['Content-Type'] = 'text/plain'
-        # request object (which is on self) has a cookies object. Call the function get
-        # GET checks whether a value is in a dictionary; if it is we get it, if it's not we get returned the default (0)
-        visits = self.request.cookies.get('visits', '0')
-        # VISITS is currently string, turn it into an int
-        if visits.isdigit():
-            visits = int(visits) + 1
-        else: 
-            visits = 0
+        # visits is the actual visits count, which is by default 0
+        visits = 0
+         # request object (which is on self) has a cookies object. Call the function get
+        # GET checks whether a value is in a dictionary; if it is we get it; otherwise return none if that cookie doesn't exist at all
+        visit_cookie_str = self.request.cookies.get('visits')
+        if visit_cookie_val:
+            cookie_val = check_secure_val(visit_cookie_str)
+            # remember this function returns none if not valid. If it IS valid, convert to int and store in visits
+            if cookie_val: 
+                visits = int(cookie_val)
+        
+        visits += 1
+
+        new_cookie_val = make_secure_val(str(visits))
         
         # use a header to set a cookie
-        self.response.headers.add_header('Set-Cookie', 'visits=%s' % visits) 
+        self.response.headers.add_header('Set-Cookie', 'visits=%s' % new_cookie_val) 
 
         if visits > 1000: 
             self.write("You are the best ever!")
