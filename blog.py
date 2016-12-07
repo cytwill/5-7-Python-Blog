@@ -5,8 +5,12 @@ from string import letters
 import webapp2
 import jinja2
 import hashlib
+import hmac
 
 from google.appengine.ext import db
+
+# needs to be in a different module
+SECRET = 'imsosecret'
 
 # Templates below: create the directory for templates, place templates in there
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -38,10 +42,11 @@ def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
 
 def hash_str(s): 
-    return hashlib.md5(s).hexdigest()
+    return hmac.new(SECRET, s).hexdigest()
 
 # takes a string a returns a string of the format: s, HASH
 def make_secure_val(s): 
+    # note that here and in the split below, google app engine requires | instead of ,
     return "%s|%s" % (s, hash_str(s))
 
 # take a string of the format s,HASH and returns s if hash_str(s) == HASH, otherwise None
@@ -154,3 +159,4 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/blog/newpost', NewPost),
                                ],
                               debug=True)
+
